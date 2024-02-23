@@ -14,6 +14,8 @@ from pathlib import Path
 import time
 from utils import save_values, write_results, init_metrics
 warnings.filterwarnings(action='ignore', category=UndefinedMetricWarning)
+import argparse
+
 
 def train_olga(g, hidden1, hidden2, patience, lr, r, multi_task, epochs):
     loss_ocl = 0
@@ -91,8 +93,6 @@ def train_parameters(l_graphs, patience, hidden1, hidden2, r, lr, file_name, pr,
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='OLGA')
     
-    register_data_args(parser)
-    
     parser.add_argument("--k", type=str, default='k=1', help="k from graph modeling")
     
     parser.add_argument("--h1", type=int, default=48, help="neurons from first hidden layer")
@@ -115,17 +115,17 @@ if __name__ == '__main__':
 
     l_graphs = []
     for fold in range(10):
-        path = '../datasets/' + args.dataset + '/' + args.k + '/' + args.dataset + '_' + args.k + '_fold=' + str(fold) + '.gpickle'
-        graph = nx.read_gpickle(path)
-        l_graphs.append(graph)
-
+    	path = '../datasets/' + args.dataset + '/' + args.k + '/' + args.dataset + '_' + args.k + '_fold=' + str(fold) + '.gpickle'
+    	graph = nx.read_gpickle(path)
+    	l_graphs.append(graph)
+    	
     # seeds
     seed = 81
     np.random.seed(seed)
     torch.manual_seed(seed)
     random.seed(seed)
     torch.cuda.manual_seed_all(seed)
-
-	pr = '../results/' + args.dataset + '_' + args.k + '_'
-
-	train_parameters(l_graphs, args.patience, args.h1, args.h2, args.radius, args.lr, file_name, pr, args.n_epochs)
+    
+    pr = '../results/' + args.dataset + '_' + args.k + '_'
+    
+    train_parameters(l_graphs, args.patience, args.h1, args.h2, args.radius, args.lr, file_name, pr, args.n_epochs)

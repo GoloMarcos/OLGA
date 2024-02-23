@@ -99,8 +99,6 @@ if __name__ == '__main__':
     
     parser.add_argument("--h2", type=int, default=2, help="neurons from second hidden layer")
     
-    parser.add_argument("--h2", type=int, default=2, help="neurons from second hidden layer")
-    
     parser.add_argument("--radius", type=float, default=0.5, help="hypershpere radius")
     
     parser.add_argument("--lr", type=float, default=0.0001, help="learning rate")
@@ -115,13 +113,9 @@ if __name__ == '__main__':
 
     file_name = 'OLGA.csv' 
 
-    pt = '../datasets/'
-    basepath = Path(pt)
-    datasets = basepath.iterdir()
-
     l_graphs = []
     for fold in range(10):
-        path = pt + dataset + '/' + args.k + '/' + dataset + '_' + args.k + '_fold=' + str(fold) + '.gpickle'
+        path = '../datasets/' + args.dataset + '/' + args.k + '/' + args.dataset + '_' + args.k + '_fold=' + str(fold) + '.gpickle'
         graph = nx.read_gpickle(path)
         l_graphs.append(graph)
 
@@ -132,6 +126,6 @@ if __name__ == '__main__':
     random.seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-	pr = '../results/' + dataset + '_' + args.k + '_'
+	pr = '../results/' + args.dataset + '_' + args.k + '_'
 
 	train_parameters(l_graphs, args.patience, args.h1, args.h2, args.radius, args.lr, file_name, pr, args.n_epochs)

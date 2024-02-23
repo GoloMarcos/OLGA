@@ -15,7 +15,7 @@ import time
 from utils import save_values, write_results, init_metrics
 warnings.filterwarnings(action='ignore', category=UndefinedMetricWarning)
 
-def train_olga(g, hidden1, hidden2, patience, lr, r, multi_task):
+def train_olga(g, hidden1, hidden2, patience, lr, r, multi_task, epochs):
     loss_ocl = 0
     recon_loss_unsup = 0
     embeddings, losses_ocl, losses_rec, accuracies, losses = [], [], [], [], []
@@ -34,7 +34,7 @@ def train_olga(g, hidden1, hidden2, patience, lr, r, multi_task):
     stopper = EarlyStopping(patience)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    for epoch in range(5001):
+    for epoch in range(epochs+1):
         # Clear gradients
         optimizer.zero_grad()
 
@@ -74,13 +74,13 @@ def train_olga(g, hidden1, hidden2, patience, lr, r, multi_task):
 
     return dic_results
 
-def train_parameters(l_graphs, patience, hidden1, hidden2, r, lr, file_name, pr):
+def train_parameters(l_graphs, patience, hidden1, hidden2, r, lr, file_name, pr, epochs):
     multi_task = patience / 2
     l_param = str(hidden1) + '_' + str(hidden2) + '_' + str(r) + '_' + str(lr) + '_' + str(patience)
     metrics = init_metrics()
     for g in l_graphs:
         start = time.time()
-        values = train_olga(g, hidden1, hidden2, patience, lr, r, multi_task)
+        values = train_olga(g, hidden1, hidden2, patience, lr, r, multi_task,epochs)
         end = time.time()
         time_ = end - start
         values['time'] = time_
@@ -89,10 +89,29 @@ def train_parameters(l_graphs, patience, hidden1, hidden2, r, lr, file_name, pr)
     write_results(metrics, file_name, l_param, pr)
 
 if __name__ == '__main__':
-    k = sys.argv[1]
-
-    dataset = sys.argv[2]
-
+    parser = argparse.ArgumentParser(description='OLGA')
+    
+    register_data_args(parser)
+    
+    parser.add_argument("--k", type=str, default='k=1', help="k from graph modeling")
+    
+    parser.add_argument("--h1", type=int, default=48, help="neurons from first hidden layer")
+    
+    parser.add_argument("--h2", type=int, default=2, help="neurons from second hidden layer")
+    
+    parser.add_argument("--h2", type=int, default=2, help="neurons from second hidden layer")
+    
+    parser.add_argument("--radius", type=float, default=0.5, help="hypershpere radius")
+    
+    parser.add_argument("--lr", type=float, default=0.0001, help="learning rate")
+    
+    parser.add_argument("--patience", type=int, default=300, help="patience for early stopping")
+    
+    parser.add_argument("--n-epochs", type=int, default=5000, help="training epochs")
+    
+    parser.add_argument("--dataset", type=str, default="food", help="dataset")
+    
+    args = parser.parse_args()
 
     file_name = 'OLGA.csv' 
 
@@ -102,7 +121,7 @@ if __name__ == '__main__':
 
     l_graphs = []
     for fold in range(10):
-        path = pt + dataset + '/' + k + '/' + dataset + '_' + k + '_fold=' + str(fold) + '.gpickle'
+        path = pt + dataset + '/' + args.k + '/' + dataset + '_' + args.k + '_fold=' + str(fold) + '.gpickle'
         graph = nx.read_gpickle(path)
         l_graphs.append(graph)
 
@@ -113,17 +132,6 @@ if __name__ == '__main__':
     random.seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-	hidden1s = [48] 
-	hidden2s = [2, 3]
-	rs = [0.3, 0.35, 0.4]
-	lrs = [0.0001, 0.0005]
-	patiences = [300, 500]
+	pr = '../results/' + dataset + '_' + args.k + '_'
 
-	pr = '../results/' + dataset + '_' + k + '_'
-
-	for hidden1 in hidden1s:
-		for hidden2 in hidden2s:
-			for r in rs:
-				for lr in lrs:
-			    	for patience in patiences:
-			        	train_parameters(l_graphs, patience, hidden1, hidden2, r, lr, file_name, pr)
+	train_parameters(l_graphs, args.patience, args.h1, args.h2, args.radius, args.lr, file_name, pr, args.n_epochs)

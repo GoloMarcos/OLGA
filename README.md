@@ -2,7 +2,7 @@
 
 # Example
 
-python main.py --k [k=1/k=2/k=3] --dataset [TUANDROMD/fakenews/food/musk/pneumonia/relevant_reviews/strawberry/terrorism]
+python main.py --k [k=1/k=2/k=3] --h1 48 --h2 2 --radius 0.4 --lr 0.0001 --patience 300 --n-epochs 5000 --dataset [TUANDROMD/fakenews/food/musk/pneumonia/relevant_reviews/strawberry/terrorism]
  
 # requirements
 - networkx==2.6

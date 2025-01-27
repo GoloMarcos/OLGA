@@ -6,6 +6,7 @@ import main
 import networkx as nx
 from pathlib import Path
 import pandas as pd
+import matplotlib
 from matplotlib import pyplot as plt 
 
 import warnings
@@ -112,47 +113,47 @@ def create_args(dataset, nu, module, lr, patience, n_hidden, k):
   return args, line_parameters
 
 if __name__ == '__main__':
-	pt = '../../datasets/'
-	path_results = '../../results/'
+  pt = '../../../../datasets/'
+  path_results = '../../../../results_test/Low Dim/'
+  for dataset in ['relevant_reviews', 'food', 'TUANDROMD']:
+    print(dataset)
+    for method in ['OC-GCN', 'OC-GAT', 'OC-GraphSAGE']:
+      print(method)
+      path = pt + dataset + '/k=1/' + dataset + '_k=1_fold=0.gpickle'
+      graph = nx.read_gpickle(path)
+      graph_dgl = dgl.from_networkx(graph, node_attrs=['features', 'label', 'train', 'val', 'test'], edge_attrs=None, edge_id_attr_name=None)
+      g_nt = OneClassGraphDataset(graph,graph_dgl)
 
-	for dataset in ['relevant_reviews', 'food', 'TUANDROMD']:
-		print(dataset)
-		for method in ['OC-GCN', 'OC-GAT', 'OC-GraphSAGE']:
-			print(method)
-			path = pt + dataset + '/k=1/' + dataset + '_k=1_fold=0.gpickle'
-			graph = nx.read_gpickle(path)
-			graph_dgl = dgl.from_networkx(graph, node_attrs=['features', 'label', 'train', 'val', 'test'], edge_attrs=None, edge_id_attr_name=None)
-			g_nt = OneClassGraphDataset(graph,graph_dgl)
+      module = method.split('-')[1].split('.')[0]
 
-			module = method.split('-')[1].split('.')[0]
-			
-			df = pd.read_csv(path_results + dataset + '_k=1_' + method + '.csv', sep=';')
-			
-			df = df.sort_values(by='macro avg_f1-score-mean', ascending=False)
-			
-			for index,row in df.iterrows():
-				parts = row['Parameters'].split('_')
-				nu = float(parts[0])
-				lr = float(parts[1])
-				patience = int(parts[2])
-				n_hidden = int(parts[3])
-				if n_hidden == 2:
-					break
+      df = pd.read_csv(path_results + dataset + '_k=1_' + method + '.csv', sep=';')
 
-			args, line_parameters = create_args(dataset, nu, module, lr, patience, n_hidden, '1')
+      df = df.sort_values(by='macro avg_f1-score-mean', ascending=False)
 
-			values, embs = main.main(args, g_nt)
-			colors = []
-			for node in graph:
-				if graph.nodes[node]['label'] == 1:
-					colors.append('#0074ff')
-				else:
-					colors.append('#00ff5c')
-					
-			fig = plt.figure(figsize=(8,8))
-			ax = fig.add_subplot()
-			ax.clear()
-			ax.scatter(embs[:,0], embs[:,1], s=100, c=colors, cmap="hsv")
-			plt.savefig('../' + dataset + '_' + method + '.png')
-			plt.close()
+      for index,row in df.iterrows():
+        parts = row['Parameters'].split('_')
+        nu = float(parts[0])
+        lr = float(parts[1])
+        patience = int(parts[2])
+        n_hidden = int(parts[3])
+        if n_hidden == 2:
+          break
+
+        args, line_parameters = create_args(dataset, nu, module, lr, patience, n_hidden, '1')
+
+        values, embs = main.main(args, g_nt)
+        colors = []
+        for node in graph:
+          if graph.nodes[node]['label'] == 1:
+            colors.append('#0074ff')
+          else:
+            colors.append('#00ff5c')
+          
+        matplotlib.rcParams.update({'font.size': 22})
+        fig = plt.figure(figsize=(8,8))
+        ax = fig.add_subplot()
+        ax.clear()
+        ax.scatter(embs[:,0], embs[:,1], s=100, c=colors, cmap="hsv")
+        plt.savefig('../' + dataset + '_' + method + '.png')
+        plt.close()
 

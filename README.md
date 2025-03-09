@@ -16,7 +16,7 @@ If you use any part of this code in your research, please cite it using the foll
     issn = {0020-0255},
     doi = {https://doi.org/10.1016/j.ins.2025.122060},
     url = {https://www.sciencedirect.com/science/article/pii/S0020025525001926},
-    author = {Marcos Paulo Silva Gôlo and José Gilberto Barbosa de Medeiros Junior and Diego Furtado Silva and Ricardo Marcondes Marcacini},
+    author={G{\^o}lo, Marcos Paulo Silva and de Medeiros Junior, Jos{\'e} Gilberto Barbosa and Silva, Diego Furtado and Marcacini, Ricardo Marcondes},
 ```
 
 # Abstract 
